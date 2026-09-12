@@ -1,5 +1,5 @@
 #include "window.h"
-#include "triangle3.h"
+#include "triangle.h"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
@@ -9,17 +9,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// 0 = Start windowed, 1 = Start fullscreen
+#define START_FULLSCREEN 0
+
 // Global window
-static GLFWwindow* window;
+static GLFWwindow *window;
+static int windowed_x, windowed_y, windowed_w, windowed_h;
+
+
+static void setFullscreen(GLFWwindow *win, int enable)
+{
+    if (enable) {
+        glfwGetWindowPos(win, &windowed_x, &windowed_y);
+        glfwGetWindowSize(win, &windowed_w, &windowed_h);
+
+        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+        glfwSetWindowMonitor(win, monitor, 0, 0,
+                             mode->width, mode->height, mode->refreshRate);
+    } else {
+        glfwSetWindowMonitor(win, NULL, windowed_x, windowed_y,
+                             windowed_w, windowed_h, 0);
+    }
+}
+
+static void toggleFullscreen(GLFWwindow *win)
+{
+    setFullscreen(win, glfwGetWindowMonitor(win) == NULL);
+}
 
 
 // Receive key press and release events
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     (void)scancode;
     (void)mods;
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+
+    if (action != GLFW_PRESS) {
+        return;
+    }
+    if (key == GLFW_KEY_ESCAPE) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    } else if (key == GLFW_KEY_F) {
+        toggleFullscreen(window);
+    }
 }
 
 // If a GLFW function fails, an error is reported to the error callback
@@ -50,10 +83,6 @@ void createWindow(void)
     // Set callback function before initialising
     glfwSetErrorCallback(error_callback);
 
-    // Force GLFW to use X11.
-    // This makes GLFW create the OpenGL context through GLX instead of attempting the EGL path.
-    glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
-
     // Initialise GLFW
     if (!glfwInit()) {
         fprintf(stderr, "Failed to initialize GLFW\n");
@@ -66,7 +95,7 @@ void createWindow(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window and its OpenGL context - returns a handle to the created combined window and context object
-    window = glfwCreateWindow(640, 480, "Minecraft", NULL, NULL);
+    window = glfwCreateWindow(2000, 1200, "Minecraft", NULL, NULL);
     if (!window)
     {
         // Window or OpenGL context creation failed
@@ -75,6 +104,10 @@ void createWindow(void)
         exit(EXIT_FAILURE);
     }
 
+    // Get window position and size
+    glfwGetWindowPos(window, &windowed_x, &windowed_y);
+    glfwGetWindowSize(window, &windowed_w, &windowed_h);
+    
     // Make the OpenGL context current
     glfwMakeContextCurrent(window);
 
@@ -91,14 +124,17 @@ void createWindow(void)
     // Enable vsync - buffer swap synchronised with monitor refresh rate
     glfwSwapInterval(1);
 
+    if (START_FULLSCREEN) {
+        setFullscreen(window, 1);
+    }
+    
 }
-
 
 // Main application loop
 void mainLoop(void)
 {
     // Initialise
-    initTriangle3();
+    initTriangle();
 
     while (!glfwWindowShouldClose(window)) {
         // Process input/window events first
@@ -106,8 +142,8 @@ void mainLoop(void)
 
         //do stuff here using fresh input
 
-        //render draw to back buffer
-        renderTriangle3(window);
+        //render - draw to back buffer
+        renderTriangle(window);
 
         // Show frame just drawn
         glfwSwapBuffers(window);
@@ -116,5 +152,3 @@ void mainLoop(void)
 
     destroyWindow();
 }
-
-

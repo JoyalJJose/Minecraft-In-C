@@ -1,15 +1,17 @@
 CC = gcc
 GLFW_DIR = lib/glfw-3.5.1
 
-CFLAGS = -Wall -Wextra -I$(GLFW_DIR)/include -I$(GLFW_DIR)/deps -Isrc
+CFLAGS = -Wall -Wextra -O2 -I$(GLFW_DIR)/include -I$(GLFW_DIR)/deps -Isrc
 LDFLAGS = -L$(GLFW_DIR)/build/src
-LDLIBS = -lglfw3 -lGL -lX11 -lpthread -lm
+LDLIBS = -lglfw3 -lopengl32 -lgdi32 -luser32 -lshell32
 
 TARGET = build/minecraft
 SRC = $(shell find src -name '*.c')
 OBJ = $(SRC:src/%.c=build/%.o)
 
-.PHONY: run clean
+.PHONY: all run clean glfw
+
+all: $(TARGET)
 
 $(TARGET): $(OBJ)
 	@mkdir -p $(dir $@)
@@ -20,10 +22,7 @@ build/%.o: src/%.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 run: $(TARGET)
-	@LD_LIBRARY_PATH="/usr/lib/wsl/lib$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}" \
-	GALLIUM_DRIVER=d3d12 \
-	MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA \
-	./$(TARGET)
+	@./$(TARGET)
 
 clean:
-	rm -rf build/*
+	@rm -rf build/*
