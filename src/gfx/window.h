@@ -2,6 +2,6 @@
 #define WINDOW_H
 
 void createWindow(void);
-void mainLoop(void);
+void gameLoop(void);
 
 #endif

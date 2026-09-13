@@ -3,6 +3,6 @@
 int main(void)
 {
     createWindow();
-    mainLoop();
+    gameLoop();
 
 }//end main

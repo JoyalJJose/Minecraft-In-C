@@ -1,5 +1,5 @@
 #include "window.h"
-#include "triangle.h"
+#include "rectangle.h"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
@@ -17,8 +17,7 @@ static GLFWwindow *window;
 static int windowed_x, windowed_y, windowed_w, windowed_h;
 
 
-static void setFullscreen(GLFWwindow *win, int enable)
-{
+static void setFullscreen(GLFWwindow *win, int enable) {
     if (enable) {
         glfwGetWindowPos(win, &windowed_x, &windowed_y);
         glfwGetWindowSize(win, &windowed_w, &windowed_h);
@@ -33,8 +32,7 @@ static void setFullscreen(GLFWwindow *win, int enable)
     }
 }
 
-static void toggleFullscreen(GLFWwindow *win)
-{
+static void toggleFullscreen(GLFWwindow *win) {
     setFullscreen(win, glfwGetWindowMonitor(win) == NULL);
 }
 
@@ -48,6 +46,24 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     if (action != GLFW_PRESS) {
         return;
     }
+
+    // WASD, Space/Shift camera movement
+    if (key == GLFW_KEY_W) {
+        // moveForward(window);
+    } else if (key == GLFW_KEY_S) {
+        // moveBackward(window);
+    } else if (key == GLFW_KEY_A) {
+        // moveLeft(window);
+    } else if (key == GLFW_KEY_D) {
+        // moveRight(window);
+    }
+    if (key == GLFW_KEY_SPACE) {
+        // moveUp(window);
+    } else if (key == GLFW_KEY_LEFT_SHIFT) {
+        // moveDown(window);
+    }
+
+    // ESC - close window, F - toggle fullscreen
     if (key == GLFW_KEY_ESCAPE) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     } else if (key == GLFW_KEY_F) {
@@ -95,7 +111,7 @@ void createWindow(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window and its OpenGL context - returns a handle to the created combined window and context object
-    window = glfwCreateWindow(2000, 1200, "Minecraft", NULL, NULL);
+    window = glfwCreateWindow(2048, 1152, "Minecraft", NULL, NULL);
     if (!window)
     {
         // Window or OpenGL context creation failed
@@ -124,17 +140,15 @@ void createWindow(void)
     // Enable vsync - buffer swap synchronised with monitor refresh rate
     glfwSwapInterval(1);
 
-    if (START_FULLSCREEN) {
-        setFullscreen(window, 1);
-    }
+    if (START_FULLSCREEN) {setFullscreen(window, 1);}
     
 }
 
 // Main application loop
-void mainLoop(void)
+void gameLoop(void)
 {
     // Initialise
-    initTriangle();
+    initRectangle();
 
     while (!glfwWindowShouldClose(window)) {
         // Process input/window events first
@@ -143,7 +157,7 @@ void mainLoop(void)
         //do stuff here using fresh input
 
         //render - draw to back buffer
-        renderTriangle(window);
+        renderRectangle(window);
 
         // Show frame just drawn
         glfwSwapBuffers(window);
