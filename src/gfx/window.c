@@ -1,5 +1,7 @@
 #include "window.h"
 #include "rectangle.h"
+#include "triangle.h"
+#include "camera.h"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
@@ -10,25 +12,27 @@
 #include <stdlib.h>
 
 // 0 = Start windowed, 1 = Start fullscreen
-#define START_FULLSCREEN 0
+#define START_FULLSCREEN 1
 
 // Global window
 static GLFWwindow *window;
-static int windowed_x, windowed_y, windowed_w, windowed_h;
+static int windowX, windowY;
+static int windowWidth = 2048;
+static int windowHeight = 1152;
 
 
 static void setFullscreen(GLFWwindow *win, int enable) {
     if (enable) {
-        glfwGetWindowPos(win, &windowed_x, &windowed_y);
-        glfwGetWindowSize(win, &windowed_w, &windowed_h);
+        glfwGetWindowPos(win, &windowX, &windowY);
+        glfwGetWindowSize(win, &windowWidth, &windowHeight);
 
         GLFWmonitor *monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode *mode = glfwGetVideoMode(monitor);
         glfwSetWindowMonitor(win, monitor, 0, 0,
                              mode->width, mode->height, mode->refreshRate);
     } else {
-        glfwSetWindowMonitor(win, NULL, windowed_x, windowed_y,
-                             windowed_w, windowed_h, 0);
+        glfwSetWindowMonitor(win, NULL, windowX, windowY,
+                             windowWidth, windowHeight, 0);
     }
 }
 
@@ -47,22 +51,6 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
         return;
     }
 
-    // WASD, Space/Shift camera movement
-    if (key == GLFW_KEY_W) {
-        // moveForward(window);
-    } else if (key == GLFW_KEY_S) {
-        // moveBackward(window);
-    } else if (key == GLFW_KEY_A) {
-        // moveLeft(window);
-    } else if (key == GLFW_KEY_D) {
-        // moveRight(window);
-    }
-    if (key == GLFW_KEY_SPACE) {
-        // moveUp(window);
-    } else if (key == GLFW_KEY_LEFT_SHIFT) {
-        // moveDown(window);
-    }
-
     // ESC - close window, F - toggle fullscreen
     if (key == GLFW_KEY_ESCAPE) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -71,12 +59,43 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     }
 }
 
+static void processInput(void) {
+    // float speed = 5.0f * dt;
+    float speed = 1.0f;
+
+    // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    //     camera.position += camera.front * speed;
+
+    // if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    //     camera.position -= camera.front * speed;
+
+    // if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    //     camera.position -= camera.right * speed;
+
+    // if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    //     camera.position += camera.right * speed;
+
+    // if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    //     camera.position.y += speed;
+
+    // if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    //     camera.position.y -= speed;
+}
+
+
 // If a GLFW function fails, an error is reported to the error callback
 static void error_callback(int error, const char* description)
 {
     (void)error;
     fprintf(stderr, "Error: %s\n", description);
 }
+
+// Callback function for window size changes
+static void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    (void)window;
+    // Update the GL viewport — don't overwrite windowWidth/windowHeight
+    glViewport(0, 0, width, height);
+} 
 
 // Destroy window and context
 static void destroyWindow(void) {
@@ -111,7 +130,7 @@ void createWindow(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window and its OpenGL context - returns a handle to the created combined window and context object
-    window = glfwCreateWindow(2048, 1152, "Minecraft", NULL, NULL);
+    window = glfwCreateWindow(windowWidth, windowHeight, "Minecraft", NULL, NULL);
     if (!window)
     {
         // Window or OpenGL context creation failed
@@ -120,10 +139,6 @@ void createWindow(void)
         exit(EXIT_FAILURE);
     }
 
-    // Get window position and size
-    glfwGetWindowPos(window, &windowed_x, &windowed_y);
-    glfwGetWindowSize(window, &windowed_w, &windowed_h);
-    
     // Make the OpenGL context current
     glfwMakeContextCurrent(window);
 
@@ -133,6 +148,9 @@ void createWindow(void)
         destroyWindow();
         exit(EXIT_FAILURE);
     }
+
+    // Set framebuffer size callback
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Set key callback function
     glfwSetKeyCallback(window, key_callback);
@@ -145,24 +163,38 @@ void createWindow(void)
 }
 
 // Main application loop
-void gameLoop(void)
+void renderLoop(void)
 {
     // Initialise
-    initRectangle();
+    // initRectangle();
+    initTriangle();
 
     while (!glfwWindowShouldClose(window)) {
         // Process input/window events first
         glfwPollEvents();
+        processInput();
 
         //do stuff here using fresh input
+        //game physics & state updates
+
+        //set sky colour - 78A7FF
+        glClearColor(0.47f, 0.65f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         //render - draw to back buffer
-        renderRectangle(window);
+        // renderRectangle(window);
+        renderTriangle(window);
 
         // Show frame just drawn
         glfwSwapBuffers(window);
 
     }//end while
+
+    // //deallocate resources
+    // glDeleteVertexArrays(1, &VAO);
+    // glDeleteBuffers(1, &vertexBuffer);
+    // glDeleteBuffers(1, &EBO);
+    // glDeleteProgram(shaderProgram);
 
     destroyWindow();
 }
