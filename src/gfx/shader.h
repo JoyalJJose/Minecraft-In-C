@@ -11,9 +11,10 @@ Shader createShader(const char* vertexPath, const char* fragmentPath);
 void useShader(const Shader* shader);
 void destroyShader(Shader* shader);
 
-//for when we have uniforms
-// void setShaderBool(const Shader* shader, const char* name, int value);
-// void setShaderInt(const Shader* shader, const char* name, int value);
-// void setShaderFloat(const Shader* shader, const char* name, float value);
+// setShader* assume the shader is already bound via useShader()
+void setShaderBool(const Shader* shader, const char* name, int value);
+void setShaderInt(const Shader* shader, const char* name, int value);
+void setShaderFloat(const Shader* shader, const char* name, float value);
+
 
 #endif

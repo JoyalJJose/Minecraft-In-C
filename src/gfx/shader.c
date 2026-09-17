@@ -59,10 +59,15 @@ static GLuint compileShader(const char* source, GLenum type)
 
 static GLuint linkShaderProgram(const char* vertexSource, const char* fragmentSource)
 {
-    GLuint program = glCreateProgram();
     GLuint vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
     GLuint fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
+    if (!vertexShader || !fragmentShader) {
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
+        return 0;
+    }
 
+    GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
     glLinkProgram(program);
@@ -99,6 +104,10 @@ Shader createShader(const char* vertexPath, const char* fragmentPath)
     }
 
     shader.id = linkShaderProgram(vertexCode, fragmentCode);
+    if (!shader.id) {
+        fprintf(stderr, "Failed to create shader from '%s' and '%s'\n",
+                vertexPath, fragmentPath);
+    }
 
     free(vertexCode);
     free(fragmentCode);
@@ -113,16 +122,21 @@ void useShader(const Shader* shader) {
 
 void destroyShader(Shader* shader) {
     glDeleteProgram(shader->id);
+    shader->id = 0;
 }
 
-// void setShaderBool(const Shader* shader, const char* name, int value) { 
-//     glUniform1i(glGetUniformLocation(shader->id, name), value);
-// }
+// Assumes the shader is already bound via useShader()
+void setShaderBool(const Shader* shader, const char* name, int value)
+{
+    glUniform1i(glGetUniformLocation(shader->id, name), value);
+}
 
-// void setShaderInt(const Shader* shader, const char* name, int value) {
-//     glUniform1i(glGetUniformLocation(shader->id, name), value);
-// }
+void setShaderInt(const Shader* shader, const char* name, int value)
+{
+    glUniform1i(glGetUniformLocation(shader->id, name), value);
+}
 
-// void setShaderFloat(const Shader* shader, const char* name, float value) {
-//     glUniform1f(glGetUniformLocation(shader->id, name), value);
-// }
+void setShaderFloat(const Shader* shader, const char* name, float value)
+{
+    glUniform1f(glGetUniformLocation(shader->id, name), value);
+}

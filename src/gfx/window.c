@@ -1,5 +1,4 @@
 #include "window.h"
-#include "rectangle.h"
 #include "triangle.h"
 #include "camera.h"
 
@@ -80,6 +79,13 @@ static void processInput(void) {
 
     // if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     //     camera.position.y -= speed;
+
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        adjustMixValue(0.001f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        adjustMixValue(-0.001f);
+    }
 }
 
 
@@ -183,7 +189,7 @@ void renderLoop(void)
 
         //render - draw to back buffer
         // renderRectangle(window);
-        renderTriangle(window);
+        renderTriangle();
 
         // Show frame just drawn
         glfwSwapBuffers(window);
@@ -191,10 +197,6 @@ void renderLoop(void)
     }//end while
 
     // //deallocate resources
-    // glDeleteVertexArrays(1, &VAO);
-    // glDeleteBuffers(1, &vertexBuffer);
-    // glDeleteBuffers(1, &EBO);
-    // glDeleteProgram(shaderProgram);
-
+    destroyTriangle();
     destroyWindow();
 }
